@@ -62,6 +62,12 @@ const resolvePath = (pathname) => {
 };
 
 const serveFile = async (filePath, res, method) => {
+  if (!existsSync(filePath)) {
+    const error = new Error("File not found");
+    error.code = "ENOENT";
+    throw error;
+  }
+
   const fileStats = await stat(filePath);
 
   return new Promise((resolve, reject) => {
@@ -129,7 +135,7 @@ createServer(async (req, res) => {
       return;
     }
 
-    const requestUrl = new URL(req.url ?? "/", "http://localhost");
+    const requestUrl = new URL(req.url ?? "/", "http://dummy");
     let pathname;
 
     try {
