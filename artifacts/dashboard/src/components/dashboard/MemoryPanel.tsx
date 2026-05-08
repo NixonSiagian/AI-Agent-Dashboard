@@ -8,20 +8,20 @@ interface Props {
 
 export function MemoryPanel({ memory }: Props) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
+    <div className="rounded-xl border border-border bg-card p-3 sm:p-4">
       <div className="flex items-center gap-2 mb-3">
-        <Brain size={14} className="text-primary" />
-        <h2 className="text-sm font-semibold tracking-wider uppercase text-muted-foreground">
+        <Brain size={13} className="text-primary" />
+        <h2 className="text-xs sm:text-sm font-semibold tracking-wider uppercase text-muted-foreground">
           Agent Memory
         </h2>
         <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30 font-mono ml-auto">
-          {memory.length} entries
+          {memory.length}
         </span>
       </div>
 
-      <div className="space-y-1.5 overflow-y-auto scrollbar-thin" style={{ maxHeight: 200 }}>
+      <div className="space-y-1.5 overflow-y-auto scrollbar-thin" style={{ maxHeight: 180 }}>
         {memory.length === 0 ? (
-          <div className="text-center text-muted-foreground/40 text-xs py-4">
+          <div className="text-center text-muted-foreground/40 text-[11px] py-4">
             Memory builds as agents complete tasks
           </div>
         ) : (
@@ -31,7 +31,7 @@ export function MemoryPanel({ memory }: Props) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: i * 0.03 }}
-              className="flex items-start gap-2 px-2 py-1.5 rounded-lg bg-muted/20 border border-border/30 hover:bg-muted/40 transition-colors"
+              className="flex items-start gap-2 px-2 py-2 rounded-lg bg-muted/20 border border-border/30 hover:bg-muted/40 active:bg-muted/50 transition-colors"
             >
               <Brain size={10} className="text-primary/60 mt-0.5 shrink-0" />
               <div className="min-w-0 flex-1">

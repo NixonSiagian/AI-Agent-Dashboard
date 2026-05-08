@@ -1,0 +1,105 @@
+Improve the entire Nixon Workspace UI to be fully responsive and optimized for mobile devices.
+
+IMPORTANT:
+The current mobile view is broken and ugly.
+Fix all responsiveness issues professionally.
+
+MOBILE DESIGN GOALS:
+- futuristic mobile AI operating system
+- clean layout
+- smooth responsive transitions
+- premium mobile experience
+- no overlapping elements
+- no oversized panels
+- proper spacing
+- touch friendly UI
+
+RESPONSIVE REQUIREMENTS:
+
+1. SIDEBAR
+- desktop: fixed sidebar
+- mobile: collapsible drawer menu
+- add animated hamburger menu
+- smooth slide animation
+- auto close on navigation
+
+2. DASHBOARD GRID
+- desktop: multi-column
+- tablet: 2 columns
+- mobile: single column stack
+
+3. AGENT CARDS
+- fully responsive width
+- reduce padding on mobile
+- responsive typography
+- responsive avatars/icons
+- maintain futuristic look
+
+4. TERMINAL PANEL
+- responsive height
+- horizontal scroll if needed
+- smaller font on mobile
+- preserve hacker aesthetic
+
+5. TOP NAVBAR
+- responsive spacing
+- compact mobile layout
+- hide unnecessary desktop items
+- add mobile quick actions
+
+6. WORKFLOW SECTION
+- convert horizontal workflow into vertical flow on mobile
+- maintain animations
+- prevent overflow
+
+7. ANIMATIONS
+- optimize Framer Motion animations for mobile performance
+- reduce lag
+- smooth transitions
+
+8. RESPONSIVE UTILITIES
+Use proper Tailwind breakpoints:
+- sm
+- md
+- lg
+- xl
+
+9. FIX OVERFLOW ISSUES
+- no horizontal scrolling
+- no clipped cards
+- prevent layout breaking
+
+10. MOBILE PREMIUM EFFECTS
+Keep:
+- glassmorphism
+- neon glow
+- holographic style
+- animated gradients
+But optimize for mobile performance.
+
+11. RESPONSIVE TYPOGRAPHY
+Use scalable text sizes:
+- text-sm on mobile
+- text-base on tablet
+- text-lg/xl on desktop
+
+12. TOUCH OPTIMIZATION
+- bigger buttons
+- proper tap spacing
+- mobile-friendly interactions
+
+13. SAFE AREA SUPPORT
+Support:
+- iPhone notch
+- modern mobile safe areas
+
+14. PERFORMANCE
+- lazy load heavy components
+- optimize rendering
+- reduce unnecessary animations on mobile
+
+IMPORTANT:
+DO NOT destroy the futuristic aesthetic.
+Keep the AI operating system look while making it responsive.
+
+The mobile version should feel like a premium futuristic mobile AI command center.
