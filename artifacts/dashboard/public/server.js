@@ -1,10 +1,15 @@
 import { createServer } from "node:http";
-import { createReadStream } from "node:fs";
-import { stat } from "node:fs/promises";
+import { constants, createReadStream, existsSync } from "node:fs";
+import { access, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
+const indexPath = path.join(rootDir, "index.html");
+
+if (!existsSync(indexPath)) {
+  throw new Error(`Static server index.html not found in ${rootDir}`);
+}
 
 const port = (() => {
   const rawPort = process.env.PORT;
@@ -57,6 +62,7 @@ const resolvePath = (pathname) => {
 };
 
 const serveFile = async (filePath, res, method) => {
+  await access(filePath, constants.R_OK);
   const fileStats = await stat(filePath);
 
   res.statusCode = 200;
@@ -72,8 +78,14 @@ const serveFile = async (filePath, res, method) => {
 
   stream.on("error", (error) => {
     console.error("Static server stream error", error);
-    res.statusCode = 500;
-    res.end("Internal Server Error");
+
+    if (!res.headersSent) {
+      res.statusCode = 500;
+      res.end("Internal Server Error");
+      return;
+    }
+
+    res.destroy(error);
   });
 
   stream.pipe(res);
@@ -94,7 +106,15 @@ createServer(async (req, res) => {
       ? `http://${req.headers.host}`
       : "http://localhost";
     const requestUrl = new URL(req.url ?? "/", baseUrl);
-    let pathname = decodeURIComponent(requestUrl.pathname);
+    let pathname;
+
+    try {
+      pathname = decodeURIComponent(requestUrl.pathname);
+    } catch {
+      res.statusCode = 400;
+      res.end("Bad Request");
+      return;
+    }
 
     if (pathname.endsWith("/")) {
       pathname += "index.html";
@@ -124,7 +144,7 @@ createServer(async (req, res) => {
       return;
     }
 
-    await serveFile(path.join(rootDir, "index.html"), res, method);
+    await serveFile(indexPath, res, method);
   } catch (error) {
     console.error("Static server error", error);
     res.statusCode = 500;
