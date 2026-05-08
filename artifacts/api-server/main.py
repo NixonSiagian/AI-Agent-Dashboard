@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from agents.orchestrator import AgentOrchestrator
+from agents.base import api_status
 
 sio = socketio.AsyncServer(
     async_mode="asgi",
@@ -18,9 +19,20 @@ sio = socketio.AsyncServer(
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.orchestrator = AgentOrchestrator(sio)
+    # Background task that broadcasts API health every 5s
+    async def _status_broadcaster():
+        while True:
+            await asyncio.sleep(5)
+            import time
+            remaining = max(0, int(api_status["cooldown_until"] - time.time()))
+            await sio.emit("api_status", {
+                "ok": api_status["ok"],
+                "failures": api_status["failures"],
+                "cooldown_remaining": remaining,
+            })
+    asyncio.create_task(_status_broadcaster())
     yield
 
-# Mount under /ai so the reverse proxy routes correctly
 app = FastAPI(title="NEXUS AI OS", version="1.0.0", lifespan=lifespan, root_path="/ai")
 
 app.add_middleware(
@@ -31,11 +43,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── REST routes ──────────────────────────────────────────────────────────────
+# ── REST routes ───────────────────────────────────────────────────────────────
 
 @app.get("/api/healthz")
 async def health():
-    return {"status": "ok", "version": "1.0.0"}
+    import time
+    remaining = max(0, int(api_status["cooldown_until"] - time.time()))
+    return {
+        "status": "ok",
+        "version": "1.0.0",
+        "api_ok": api_status["ok"],
+        "cooldown_remaining": remaining,
+    }
 
 @app.get("/api/agents")
 async def get_agents():
@@ -58,14 +77,33 @@ async def get_memory():
     orch: AgentOrchestrator = app.state.orchestrator
     return {"memory": orch.get_memory_entries()}
 
-# ── Socket.IO events ─────────────────────────────────────────────────────────
+@app.get("/api/status")
+async def get_api_status():
+    import time
+    remaining = max(0, int(api_status["cooldown_until"] - time.time()))
+    return {
+        "api_ok": api_status["ok"],
+        "failures": api_status["failures"],
+        "cooldown_remaining": remaining,
+        "model": "gemini-1.5-flash",
+        "mode": "live" if api_status["ok"] else "simulation",
+    }
+
+# ── Socket.IO events ──────────────────────────────────────────────────────────
 
 @sio.event
 async def connect(sid, environ):
     orch: AgentOrchestrator = app.state.orchestrator
+    import time
+    remaining = max(0, int(api_status["cooldown_until"] - time.time()))
     await sio.emit("agents_state", {"agents": orch.get_agent_states()}, to=sid)
     await sio.emit("task_history", {"tasks": orch.get_task_history()}, to=sid)
     await sio.emit("memory_state", {"memory": orch.get_memory_entries()}, to=sid)
+    await sio.emit("api_status", {
+        "ok": api_status["ok"],
+        "failures": api_status["failures"],
+        "cooldown_remaining": remaining,
+    }, to=sid)
 
 @sio.event
 async def disconnect(sid):
@@ -80,7 +118,7 @@ async def submit_task(sid, data):
     )
     await sio.emit("task_queued", {"task_id": task_id}, to=sid)
 
-# ── Mount Socket.IO under /ai/socket.io ──────────────────────────────────────
+# ── Mount Socket.IO ───────────────────────────────────────────────────────────
 
 socket_app = socketio.ASGIApp(sio, other_asgi_app=app, socketio_path="/ai/socket.io")
 

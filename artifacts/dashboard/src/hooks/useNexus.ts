@@ -39,14 +39,21 @@ export interface MemoryEntry {
   summary: string;
 }
 
+export interface ApiStatus {
+  ok: boolean;
+  failures: number;
+  cooldown_remaining: number;
+}
+
 export function useNexus() {
-  const [connected, setConnected] = useState(false);
+  const [connected, setConnected]       = useState(false);
   const [backendOnline, setBackendOnline] = useState(false);
-  const [agents, setAgents] = useState<AgentState[]>([]);
-  const [tasks, setTasks] = useState<TaskRecord[]>([]);
-  const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [memory, setMemory] = useState<MemoryEntry[]>([]);
-  const [activeTask, setActiveTask] = useState<TaskRecord | null>(null);
+  const [agents, setAgents]             = useState<AgentState[]>([]);
+  const [tasks, setTasks]               = useState<TaskRecord[]>([]);
+  const [logs, setLogs]                 = useState<LogEntry[]>([]);
+  const [memory, setMemory]             = useState<MemoryEntry[]>([]);
+  const [activeTask, setActiveTask]     = useState<TaskRecord | null>(null);
+  const [apiStatus, setApiStatus]       = useState<ApiStatus>({ ok: true, failures: 0, cooldown_remaining: 0 });
 
   const socketRef = useRef(getSocket());
 
@@ -59,42 +66,26 @@ export function useNexus() {
 
   useEffect(() => {
     const s = socketRef.current;
-
     s.on("connect",    () => setConnected(true));
     s.on("disconnect", () => setConnected(false));
-
-    s.on("agents_state", ({ agents }: { agents: AgentState[] }) => setAgents(agents));
-
-    s.on("task_history", ({ tasks }: { tasks: TaskRecord[] }) => setTasks(tasks));
-
+    s.on("agents_state",  ({ agents }: { agents: AgentState[] }) => setAgents(agents));
+    s.on("task_history",  ({ tasks }: { tasks: TaskRecord[] }) => setTasks(tasks));
     s.on("task_update", ({ task }: { task: TaskRecord }) => {
-      setTasks((prev) => {
-        const idx = prev.findIndex((t) => t.id === task.id);
+      setTasks(prev => {
+        const idx = prev.findIndex(t => t.id === task.id);
         if (idx === -1) return [task, ...prev];
-        const next = [...prev];
-        next[idx] = task;
-        return next;
+        const next = [...prev]; next[idx] = task; return next;
       });
-      setActiveTask((cur) => (cur?.id === task.id ? task : cur));
+      setActiveTask(cur => cur?.id === task.id ? task : cur);
     });
-
-    s.on("agent_log", (entry: LogEntry) => {
-      setLogs((prev) => [entry, ...prev].slice(0, 500));
-    });
-
+    s.on("agent_log",    (entry: LogEntry) => setLogs(prev => [entry, ...prev].slice(0, 500)));
     s.on("memory_state", ({ memory }: { memory: MemoryEntry[] }) => setMemory(memory));
-
-    s.on("task_queued", () => {});
-
+    s.on("api_status",   (status: ApiStatus) => setApiStatus(status));
+    s.on("task_queued",  () => {});
     return () => {
-      s.off("connect");
-      s.off("disconnect");
-      s.off("agents_state");
-      s.off("task_history");
-      s.off("task_update");
-      s.off("agent_log");
-      s.off("memory_state");
-      s.off("task_queued");
+      s.off("connect"); s.off("disconnect"); s.off("agents_state");
+      s.off("task_history"); s.off("task_update"); s.off("agent_log");
+      s.off("memory_state"); s.off("api_status"); s.off("task_queued");
     };
   }, []);
 
@@ -102,5 +93,5 @@ export function useNexus() {
     return apiSubmitTask(description, type);
   }, []);
 
-  return { connected, backendOnline, agents, tasks, logs, memory, activeTask, setActiveTask, submitTask };
+  return { connected, backendOnline, agents, tasks, logs, memory, activeTask, setActiveTask, submitTask, apiStatus };
 }

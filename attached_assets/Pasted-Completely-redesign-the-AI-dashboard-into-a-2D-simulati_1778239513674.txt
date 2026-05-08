@@ -1,0 +1,177 @@
+Completely redesign the AI dashboard into a 2D simulation-style AI workspace similar to RimWorld colony management UI.
+
+IMPORTANT:
+The current dashboard feels static and boring.
+I want a REALTIME 2D AI AGENT SIMULATION.
+
+The AI agents must visually exist inside the workspace as moving 2D avatars/characters.
+
+==================================================
+MAIN CONCEPT
+==================================================
+
+Create a top-down 2D simulation workspace where AI agents move around and work autonomously.
+
+Style inspiration:
+- RimWorld
+- Project Zomboid UI
+- AI operating system
+- futuristic cyberpunk colony simulation
+- digital office simulation
+
+The user should feel like:
+"I am watching my AI employees work in realtime."
+
+==================================================
+2D WORLD SYSTEM
+==================================================
+
+Create a large 2D workspace map.
+
+Inside the map:
+- desks
+- computer stations
+- server rooms
+- deployment terminals
+- research areas
+- coding stations
+
+AI agents should physically move between stations.
+
+==================================================
+AI AVATAR SYSTEM
+==================================================
+
+Each AI agent must have:
+- animated 2D avatar
+- walking animation
+- idle animation
+- working animation
+- typing animation
+- thinking indicator
+- task bubble above head
+
+Agents:
+- Manager Agent
+- Developer Agent
+- Research Agent
+- Debugger Agent
+- Deployment Agent
+
+==================================================
+REALTIME AGENT BEHAVIOR
+==================================================
+
+Agents should:
+- walk to assigned workstations
+- pause while "working"
+- display current tasks
+- communicate with other agents
+- update progress live
+- move dynamically
+
+Example:
+Manager Agent walks to Developer Agent
+↓
+Assigns task
+↓
+Developer walks to coding station
+↓
+Types while generating code
+↓
+Debugger walks to debug station
+↓
+Deployment Agent walks to server terminal
+
+==================================================
+LIVE TASK VISUALIZATION
+==================================================
+
+Show:
+- progress bars above agents
+- realtime task names
+- live status bubbles
+- moving task packets between agents
+- active workflow lines
+
+==================================================
+SIMULATION UI
+==================================================
+
+Add:
+- realtime clock
+- system activity
+- live AI economy/resources
+- active projects
+- current workloads
+- AI energy/status bars
+
+==================================================
+CAMERA SYSTEM
+==================================================
+
+Add:
+- draggable camera
+- zoom in/out
+- smooth movement
+- minimap
+- follow selected agent
+
+==================================================
+VISUAL STYLE
+==================================================
+
+Style:
+- futuristic RimWorld
+- neon cyberpunk
+- holographic simulation
+- dark blue/purple UI
+- glowing terminals
+- pixel-futuristic hybrid
+
+==================================================
+TECH REQUIREMENTS
+==================================================
+
+Frontend:
+- Next.js
+- TailwindCSS
+- Framer Motion
+- Zustand
+- HTML5 Canvas or PixiJS
+
+IMPORTANT:
+Use PIXIJS or Canvas rendering for smooth 2D simulation.
+
+==================================================
+REALTIME ENGINE
+==================================================
+
+Use:
+- Socket.IO realtime updates
+- actual simulation loop
+- moving entities
+- pathfinding system
+- dynamic state updates
+
+==================================================
+AI API
+==================================================
+
+Use Gemini API only.
+
+==================================================
+IMPORTANT
+==================================================
+
+DO NOT make static cards.
+
+I want:
+- moving AI workers
+- live simulation
+- realtime autonomous behavior
+- RimWorld-like management system
+- visual AI colony simulation
+
+The final result should feel like:
+"A futuristic AI company simulation game where AI employees are actually working."

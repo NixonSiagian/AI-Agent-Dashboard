@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { AgentCanvas } from "@/components/dashboard/AgentCanvas";
+import { SimWorld } from "@/components/dashboard/SimWorld";
 import { AgentFleet } from "@/components/dashboard/AgentFleet";
 import { LiveLogs } from "@/components/dashboard/LiveLogs";
 import { TaskSubmit } from "@/components/dashboard/TaskSubmit";
@@ -8,7 +7,7 @@ import { TaskPanel } from "@/components/dashboard/TaskPanel";
 import { MemoryPanel } from "@/components/dashboard/MemoryPanel";
 import { useNexus } from "@/hooks/useNexus";
 import { motion } from "framer-motion";
-import { Cpu, CheckCircle2, AlertTriangle, Brain, Zap } from "lucide-react";
+import { Cpu, CheckCircle2, AlertTriangle, Brain, Wifi, WifiOff } from "lucide-react";
 
 function StatCard({ label, value, sub, icon: Icon, color, border, bg, delay }: {
   label: string; value: string; sub: string; delay: number;
@@ -38,10 +37,8 @@ export default function DashboardPage() {
   const {
     connected, backendOnline,
     agents, tasks, logs, memory,
-    activeTask, setActiveTask, submitTask,
+    activeTask, setActiveTask, submitTask, apiStatus,
   } = useNexus();
-
-  const [localLogs, setLocalLogs] = useState(logs);
 
   const activeAgents   = agents.filter(a => a.status === "working").length;
   const completedTasks = tasks.filter(t => t.status === "completed").length;
@@ -58,36 +55,47 @@ export default function DashboardPage() {
     return result;
   };
 
+  const apiIcon = apiStatus.ok ? Wifi : WifiOff;
+  const apiColor = apiStatus.ok ? "text-green-400" : "text-yellow-400";
+  const apiBorder = apiStatus.ok ? "border-green-400/20" : "border-yellow-400/20";
+  const apiBg = apiStatus.ok ? "bg-green-400/10" : "bg-yellow-400/10";
+
   return (
     <DashboardLayout title="AI Operating System">
       <div className="max-w-[1600px] mx-auto space-y-3 sm:space-y-4 lg:space-y-5">
 
-        {/* ── Stat row ── */}
+        {/* ── Stat cards ── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
-          <StatCard delay={0}    label="Active Agents"  value={`${activeAgents}/${agents.length || 5}`}  sub={backendOnline ? "Gemini powered" : "Connecting…"}  icon={Cpu}           color="text-cyan-400"   border="border-cyan-400/20"   bg="bg-cyan-400/10" />
-          <StatCard delay={0.05} label="Tasks Done"     value={String(completedTasks)}                   sub={`${runningTasks} running`}                          icon={CheckCircle2}  color="text-green-400"  border="border-green-400/20"  bg="bg-green-400/10" />
-          <StatCard delay={0.10} label="Memory"         value={String(memory.length)}                    sub="Agent context"                                      icon={Brain}         color="text-purple-400" border="border-purple-400/20" bg="bg-purple-400/10" />
-          <StatCard delay={0.15} label="Errors"         value={String(errorTasks)}                       sub={connected ? "Socket live" : "Disconnected"}         icon={AlertTriangle} color={errorTasks > 0 ? "text-red-400" : "text-yellow-400"} border={errorTasks > 0 ? "border-red-400/20" : "border-yellow-400/20"} bg={errorTasks > 0 ? "bg-red-400/10" : "bg-yellow-400/10"} />
+          <StatCard delay={0}    label="Active Agents"  value={`${activeAgents}/${agents.length || 5}`}  sub={backendOnline ? "System online" : "Connecting…"}   icon={Cpu}           color="text-cyan-400"   border="border-cyan-400/20"   bg="bg-cyan-400/10" />
+          <StatCard delay={0.05} label="Tasks Done"     value={String(completedTasks)}                   sub={`${runningTasks} running now`}                     icon={CheckCircle2}  color="text-green-400"  border="border-green-400/20"  bg="bg-green-400/10" />
+          <StatCard delay={0.10} label="Memory"         value={String(memory.length)}                    sub="Agent context"                                     icon={Brain}         color="text-purple-400" border="border-purple-400/20" bg="bg-purple-400/10" />
+          <StatCard delay={0.15}
+            label={apiStatus.ok ? "AI Engine" : "Sim Mode"}
+            value={apiStatus.ok ? "LIVE" : "SIM"}
+            sub={apiStatus.ok ? "Gemini 1.5 Flash" : `Cooldown ${apiStatus.cooldown_remaining}s`}
+            icon={apiIcon}
+            color={apiColor}
+            border={apiBorder}
+            bg={apiBg}
+          />
         </div>
 
-        {/* ── 2D Agent Canvas — the main feature ── */}
-        <AgentCanvas
+        {/* ── 2D Simulation World ── */}
+        <SimWorld
           agents={agents}
           activeTask={activeTask}
           logs={logs}
           connected={connected}
+          apiStatus={apiStatus}
         />
 
         {/* ── Main grid ── */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
-          {/* Left */}
           <div className="xl:col-span-2 space-y-3 sm:space-y-4">
             <AgentFleet agents={agents} connected={connected} />
-            <TaskSubmit onSubmit={handleSubmit} disabled={!backendOnline} />
+            <TaskSubmit onSubmit={handleSubmit} disabled={!backendOnline} apiStatus={apiStatus} />
             <TaskPanel tasks={tasks} />
           </div>
-
-          {/* Right */}
           <div className="xl:col-span-1 flex flex-col gap-3 sm:gap-4">
             <div className="h-72 sm:h-80 xl:h-96">
               <LiveLogs logs={logs} />
