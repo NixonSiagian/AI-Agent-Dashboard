@@ -1,0 +1,176 @@
+Replace the current OpenAI integration with Google Gemini API.
+
+IMPORTANT:
+The current OpenAI API is failing with insufficient quota errors.
+Migrate the entire AI agent system to Gemini API.
+
+==================================================
+API MIGRATION
+==================================================
+
+Use:
+- Google Gemini API
+- @google/generative-ai
+
+Install:
+npm install @google/generative-ai
+
+Create environment variable:
+GEMINI_API_KEY=
+
+DO NOT use OpenAI anymore.
+
+==================================================
+AI SYSTEM REQUIREMENTS
+==================================================
+
+The AI agents must be REAL and functional.
+
+Agents:
+- Manager Agent
+- Developer Agent
+- Research Agent
+- Debugger Agent
+- Deployment Agent
+
+Each agent should:
+- receive tasks
+- process prompts
+- generate outputs
+- update realtime progress
+- communicate status to frontend
+
+==================================================
+REALTIME 2D AI DASHBOARD
+==================================================
+
+Redesign the dashboard into a REALTIME 2D AI workspace visualization.
+
+STYLE:
+- futuristic AI operating system
+- cyberpunk command center
+- realtime workspace
+- 2D visual operating map
+- glowing neon blue/purple UI
+- holographic panels
+- animated workflows
+
+IMPORTANT:
+I want to visually SEE the agents working in realtime.
+
+==================================================
+2D AGENT VISUALIZATION
+==================================================
+
+Create a 2D workspace area where agents appear as animated nodes/cards.
+
+Each AI agent should visually show:
+- online/offline state
+- current task
+- thinking animation
+- typing animation
+- progress %
+- live logs
+- task pipeline
+- moving workflow connections
+
+==================================================
+WORKFLOW SYSTEM
+==================================================
+
+Create animated workflow routing:
+
+Manager Agent
+↓
+Developer Agent
+↓
+Debugger Agent
+↓
+Deployment Agent
+
+Animate:
+- glowing connection lines
+- moving data particles
+- realtime task transfers
+- progress flow
+
+==================================================
+LIVE PROGRESS VIEW
+==================================================
+
+The user must be able to SEE:
+- which agent is working
+- what task it is doing
+- task completion %
+- live AI thoughts/logs
+- workflow transitions
+
+==================================================
+REALTIME LOGS
+==================================================
+
+Create live terminal logs like:
+
+[Manager] Assigning frontend task...
+[Developer] Generating React components...
+[Debugger] Fixing TypeScript issues...
+[Deploy] Preparing deployment...
+
+These logs should stream live in realtime.
+
+==================================================
+ANIMATIONS
+==================================================
+
+Use Framer Motion heavily.
+
+Add:
+- pulse effects
+- glowing borders
+- moving particles
+- animated workflow paths
+- typing indicators
+- holographic transitions
+
+==================================================
+MOBILE RESPONSIVE
+==================================================
+
+The 2D dashboard must work beautifully on mobile.
+
+Mobile requirements:
+- draggable workspace
+- zoomable 2D map
+- touch friendly controls
+- responsive agent cards
+- no overflow bugs
+
+==================================================
+TECH STACK
+==================================================
+
+Frontend:
+- Next.js
+- TailwindCSS
+- Framer Motion
+- Zustand
+- Socket.IO Client
+
+Backend:
+- Node.js or FastAPI
+- Gemini API
+- Socket.IO server
+
+==================================================
+IMPORTANT
+==================================================
+
+DO NOT create fake static UI.
+
+The dashboard must:
+- update live
+- show realtime AI activity
+- visualize active workflows
+- display actual agent progress
+
+The result should feel like a real AI operating system command center.

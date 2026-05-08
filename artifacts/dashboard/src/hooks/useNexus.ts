@@ -9,6 +9,7 @@ export interface AgentState {
   status: "idle" | "working" | "error";
   current_task: string | null;
   tasks_done: number;
+  progress: number;
 }
 
 export interface LogEntry {
@@ -27,6 +28,8 @@ export interface TaskRecord {
   finished_at?: string;
   logs: { role: string; text: string; ts: string }[];
   result: string | null;
+  pipeline_step: string | null;
+  progress: number;
 }
 
 export interface MemoryEntry {
@@ -47,7 +50,6 @@ export function useNexus() {
 
   const socketRef = useRef(getSocket());
 
-  // Health check polling
   useEffect(() => {
     const check = async () => setBackendOnline(await healthCheck());
     check();
@@ -55,20 +57,15 @@ export function useNexus() {
     return () => clearInterval(t);
   }, []);
 
-  // Socket events
   useEffect(() => {
     const s = socketRef.current;
 
-    s.on("connect", () => setConnected(true));
+    s.on("connect",    () => setConnected(true));
     s.on("disconnect", () => setConnected(false));
 
-    s.on("agents_state", ({ agents }: { agents: AgentState[] }) => {
-      setAgents(agents);
-    });
+    s.on("agents_state", ({ agents }: { agents: AgentState[] }) => setAgents(agents));
 
-    s.on("task_history", ({ tasks }: { tasks: TaskRecord[] }) => {
-      setTasks(tasks);
-    });
+    s.on("task_history", ({ tasks }: { tasks: TaskRecord[] }) => setTasks(tasks));
 
     s.on("task_update", ({ task }: { task: TaskRecord }) => {
       setTasks((prev) => {
@@ -85,13 +82,9 @@ export function useNexus() {
       setLogs((prev) => [entry, ...prev].slice(0, 500));
     });
 
-    s.on("memory_state", ({ memory }: { memory: MemoryEntry[] }) => {
-      setMemory(memory);
-    });
+    s.on("memory_state", ({ memory }: { memory: MemoryEntry[] }) => setMemory(memory));
 
-    s.on("task_queued", ({ task_id }: { task_id: string }) => {
-      console.log("Task queued:", task_id);
-    });
+    s.on("task_queued", () => {});
 
     return () => {
       s.off("connect");
@@ -106,19 +99,8 @@ export function useNexus() {
   }, []);
 
   const submitTask = useCallback(async (description: string, type = "general") => {
-    const result = await apiSubmitTask(description, type);
-    return result;
+    return apiSubmitTask(description, type);
   }, []);
 
-  return {
-    connected,
-    backendOnline,
-    agents,
-    tasks,
-    logs,
-    memory,
-    activeTask,
-    setActiveTask,
-    submitTask,
-  };
+  return { connected, backendOnline, agents, tasks, logs, memory, activeTask, setActiveTask, submitTask };
 }
