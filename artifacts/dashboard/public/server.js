@@ -63,34 +63,59 @@ const resolvePath = (pathname) => {
 
 const serveFile = async (filePath, res, method) => {
   const fileStats = await stat(filePath);
-  const stream = createReadStream(filePath);
 
-  stream.once("open", () => {
-    res.statusCode = 200;
-    res.setHeader("Content-Type", getContentType(filePath));
-    res.setHeader("Content-Length", fileStats.size);
+  return new Promise((resolve, reject) => {
+    const stream = createReadStream(filePath);
 
-    if (method === "HEAD") {
-      res.end();
-      stream.destroy();
-      return;
-    }
+    const cleanup = () => {
+      stream.removeListener("error", handleError);
+      res.removeListener("finish", handleFinish);
+      res.removeListener("close", handleFinish);
+    };
 
-    stream.pipe(res);
+    const handleFinish = () => {
+      cleanup();
+      resolve();
+    };
+
+    const handleError = (error) => {
+      console.error("Static server stream error", error);
+      cleanup();
+
+      if (!res.headersSent && error?.code === "ENOENT") {
+        reject(error);
+        return;
+      }
+
+      if (!res.headersSent) {
+        res.statusCode = 500;
+        res.end("Internal Server Error");
+        resolve();
+        return;
+      }
+
+      res.destroy(error);
+      resolve();
+    };
+
+    stream.once("open", () => {
+      res.statusCode = 200;
+      res.setHeader("Content-Type", getContentType(filePath));
+      res.setHeader("Content-Length", fileStats.size);
+
+      if (method === "HEAD") {
+        res.end();
+        stream.destroy();
+        return;
+      }
+
+      stream.pipe(res);
+    });
+
+    stream.on("error", handleError);
+    res.on("finish", handleFinish);
+    res.on("close", handleFinish);
   });
-
-  stream.on("error", (error) => {
-    console.error("Static server stream error", error);
-
-    if (!res.headersSent) {
-      res.statusCode = 500;
-      res.end("Internal Server Error");
-      return;
-    }
-
-    res.destroy(error);
-  });
-
 };
 
 createServer(async (req, res) => {
