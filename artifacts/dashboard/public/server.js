@@ -14,7 +14,11 @@ const port = (() => {
 
   const parsedPort = Number(rawPort);
 
-  if (!Number.isFinite(parsedPort) || parsedPort <= 0) {
+  if (
+    !Number.isInteger(parsedPort) ||
+    parsedPort <= 0 ||
+    parsedPort > 65535
+  ) {
     throw new Error(`Invalid PORT value: "${rawPort}"`);
   }
 
@@ -110,6 +114,7 @@ createServer(async (req, res) => {
 
     await serveFile(path.join(rootDir, "index.html"), res, method);
   } catch (error) {
+    console.error("Static server error", error);
     res.statusCode = 500;
     res.end("Internal Server Error");
   }
