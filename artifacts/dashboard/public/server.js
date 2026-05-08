@@ -73,7 +73,7 @@ const serveFile = async (filePath, res, method) => {
     const stream = createReadStream(filePath);
 
     const cleanup = () => {
-      stream.removeListener("error", handleError);
+      stream.removeListener("error", handleStreamError);
       res.removeListener("finish", handleFinish);
       res.removeListener("close", handleFinish);
     };
@@ -83,8 +83,9 @@ const serveFile = async (filePath, res, method) => {
       resolve();
     };
 
-    const handleError = (error) => {
-      console.error("Static server stream error", error);
+    const handleStreamError = (error) => {
+      const errorId = Math.random().toString(36).slice(2, 10);
+      console.error("Static server stream error", { error, errorId });
       cleanup();
 
       if (!res.headersSent && error?.code === "ENOENT") {
@@ -94,7 +95,7 @@ const serveFile = async (filePath, res, method) => {
 
       if (!res.headersSent) {
         res.statusCode = 500;
-        res.end("Internal Server Error");
+        res.end(`Internal Server Error (${errorId})`);
         resolve();
         return;
       }
@@ -116,7 +117,7 @@ const serveFile = async (filePath, res, method) => {
       stream.pipe(res);
     });
 
-    stream.on("error", handleError);
+    stream.on("error", handleStreamError);
     res.on("finish", handleFinish);
     res.on("close", handleFinish);
   });
@@ -175,9 +176,10 @@ createServer(async (req, res) => {
 
     await serveFile(indexPath, res, method);
   } catch (error) {
-    console.error("Static server error", error);
+    const errorId = Math.random().toString(36).slice(2, 10);
+    console.error("Static server error", { error, errorId });
     res.statusCode = 500;
-    res.end("Internal Server Error");
+    res.end(`Internal Server Error (${errorId})`);
   }
 }).listen(port, () => {
   console.log(`Static server listening on port ${port}`);
