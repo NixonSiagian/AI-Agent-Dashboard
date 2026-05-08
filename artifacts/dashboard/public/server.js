@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
-import { constants, createReadStream, existsSync } from "node:fs";
-import { access, stat } from "node:fs/promises";
+import { createReadStream, existsSync } from "node:fs";
+import { stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -62,19 +62,22 @@ const resolvePath = (pathname) => {
 };
 
 const serveFile = async (filePath, res, method) => {
-  await access(filePath, constants.R_OK);
   const fileStats = await stat(filePath);
-
-  res.statusCode = 200;
-  res.setHeader("Content-Type", getContentType(filePath));
-  res.setHeader("Content-Length", fileStats.size);
-
-  if (method === "HEAD") {
-    res.end();
-    return;
-  }
-
   const stream = createReadStream(filePath);
+
+  stream.once("open", () => {
+    res.statusCode = 200;
+    res.setHeader("Content-Type", getContentType(filePath));
+    res.setHeader("Content-Length", fileStats.size);
+
+    if (method === "HEAD") {
+      res.end();
+      stream.destroy();
+      return;
+    }
+
+    stream.pipe(res);
+  });
 
   stream.on("error", (error) => {
     console.error("Static server stream error", error);
@@ -88,7 +91,6 @@ const serveFile = async (filePath, res, method) => {
     res.destroy(error);
   });
 
-  stream.pipe(res);
 };
 
 createServer(async (req, res) => {
@@ -102,10 +104,7 @@ createServer(async (req, res) => {
       return;
     }
 
-    const baseUrl = req.headers.host
-      ? `http://${req.headers.host}`
-      : "http://localhost";
-    const requestUrl = new URL(req.url ?? "/", baseUrl);
+    const requestUrl = new URL(req.url ?? "/", "http://localhost");
     let pathname;
 
     try {
@@ -120,7 +119,8 @@ createServer(async (req, res) => {
       pathname += "index.html";
     }
 
-    const isAssetRequest = path.extname(pathname) !== "";
+    const extension = path.extname(pathname).toLowerCase();
+    const isAssetRequest = extension !== "" && mimeTypes.has(extension);
     const resolvedPath = resolvePath(pathname);
 
     if (!resolvedPath) {
