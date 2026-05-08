@@ -118,4 +118,6 @@ createServer(async (req, res) => {
     res.statusCode = 500;
     res.end("Internal Server Error");
   }
-}).listen(port);
+}).listen(port, () => {
+  console.log(`Static server listening on port ${port}`);
+});
