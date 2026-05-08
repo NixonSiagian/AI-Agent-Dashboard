@@ -1,5 +1,6 @@
 import { createServer } from "node:http";
-import { readFile } from "node:fs/promises";
+import { createReadStream } from "node:fs";
+import { stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -56,18 +57,26 @@ const resolvePath = (pathname) => {
 };
 
 const serveFile = async (filePath, res, method) => {
-  const data = await readFile(filePath);
+  const fileStats = await stat(filePath);
 
   res.statusCode = 200;
   res.setHeader("Content-Type", getContentType(filePath));
-  res.setHeader("Content-Length", data.length);
+  res.setHeader("Content-Length", fileStats.size);
 
   if (method === "HEAD") {
     res.end();
     return;
   }
 
-  res.end(data);
+  const stream = createReadStream(filePath);
+
+  stream.on("error", (error) => {
+    console.error("Static server stream error", error);
+    res.statusCode = 500;
+    res.end("Internal Server Error");
+  });
+
+  stream.pipe(res);
 };
 
 createServer(async (req, res) => {
@@ -81,7 +90,10 @@ createServer(async (req, res) => {
       return;
     }
 
-    const requestUrl = new URL(req.url ?? "/", "http://localhost");
+    const baseUrl = req.headers.host
+      ? `http://${req.headers.host}`
+      : "http://localhost";
+    const requestUrl = new URL(req.url ?? "/", baseUrl);
     let pathname = decodeURIComponent(requestUrl.pathname);
 
     if (pathname.endsWith("/")) {
