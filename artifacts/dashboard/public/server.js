@@ -1,6 +1,5 @@
 import { createServer } from "node:http";
 import { createReadStream, existsSync } from "node:fs";
-import { stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -70,14 +69,6 @@ const serveFile = async (filePath, res, method) => {
   if (method !== "GET" && method !== "HEAD") {
     throw new Error(`Unsupported method: ${method}`);
   }
-  if (!existsSync(filePath)) {
-    const error = new Error("File not found");
-    error.code = "ENOENT";
-    throw error;
-  }
-
-  const fileStats = await stat(filePath);
-
   return new Promise((resolve, reject) => {
     const stream = createReadStream(filePath);
 
@@ -115,7 +106,6 @@ const serveFile = async (filePath, res, method) => {
     stream.once("open", () => {
       res.statusCode = 200;
       res.setHeader("Content-Type", getContentType(filePath));
-      res.setHeader("Content-Length", fileStats.size);
 
       if (method === "HEAD") {
         stream.destroy();
