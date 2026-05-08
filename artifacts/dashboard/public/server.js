@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 const indexPath = path.join(rootDir, "index.html");
+const BASE_URL = "http://dummy";
 
 if (!existsSync(indexPath)) {
   throw new Error(`Static server index.html not found in ${rootDir}`);
@@ -66,6 +67,9 @@ const resolvePath = (pathname) => {
 };
 
 const serveFile = async (filePath, res, method) => {
+  if (method !== "GET" && method !== "HEAD") {
+    throw new Error(`Unsupported method: ${method}`);
+  }
   if (!existsSync(filePath)) {
     const error = new Error("File not found");
     error.code = "ENOENT";
@@ -139,7 +143,7 @@ createServer(async (req, res) => {
       return;
     }
 
-    const requestUrl = new URL(req.url ?? "/", "http://dummy");
+    const requestUrl = new URL(req.url ?? "/", BASE_URL);
     let pathname;
 
     try {
