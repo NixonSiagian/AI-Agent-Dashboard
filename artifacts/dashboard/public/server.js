@@ -52,7 +52,11 @@ const getContentType = (filePath) =>
   "application/octet-stream";
 
 const resolvePath = (pathname) => {
-  const resolvedPath = path.resolve(rootDir, `.${pathname}`);
+  const normalizedPath = path
+    .normalize(pathname)
+    .replace(/^([/\\])+/, "")
+    .replace(/^(\.\.(?:[/\\]|$))+/, "");
+  const resolvedPath = path.join(rootDir, normalizedPath);
 
   if (!resolvedPath.startsWith(rootDir)) {
     return null;
@@ -110,8 +114,8 @@ const serveFile = async (filePath, res, method) => {
       res.setHeader("Content-Length", fileStats.size);
 
       if (method === "HEAD") {
-        res.end();
         stream.destroy();
+        res.end();
         return;
       }
 
@@ -151,7 +155,7 @@ createServer(async (req, res) => {
     }
 
     const extension = path.extname(pathname).toLowerCase();
-    const isAssetRequest = extension !== "" && mimeTypes.has(extension);
+    const hasKnownExtension = extension !== "" && mimeTypes.has(extension);
     const resolvedPath = resolvePath(pathname);
 
     if (!resolvedPath) {
@@ -169,7 +173,7 @@ createServer(async (req, res) => {
       }
     }
 
-    if (isAssetRequest) {
+    if (hasKnownExtension) {
       res.statusCode = 404;
       res.end("Not Found");
       return;
