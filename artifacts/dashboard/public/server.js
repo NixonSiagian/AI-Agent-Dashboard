@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 const indexPath = path.join(rootDir, "index.html");
-const BASE_URL = "http://dummy";
+const URL_PARSING_BASE = "http://dummy";
 
 if (!existsSync(indexPath)) {
   throw new Error(`Static server index.html not found in ${rootDir}`);
@@ -133,7 +133,7 @@ createServer(async (req, res) => {
       return;
     }
 
-    const requestUrl = new URL(req.url ?? "/", BASE_URL);
+    const requestUrl = new URL(req.url ?? "/", URL_PARSING_BASE);
     let pathname;
 
     try {
